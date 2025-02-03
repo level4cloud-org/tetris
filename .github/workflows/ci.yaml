@@ -12,7 +12,7 @@ on:
 jobs:
 
   main:
-    if: github.ref == 'refs/heads/experiment'
+    if: github.ref == 'refs/heads/main'
     uses: level4cloud-org/devops_library/.github/workflows/ci.yaml@main
     with:
       input_param: "Hello World"
