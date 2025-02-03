@@ -1,4 +1,4 @@
-name: CI Pipelin
+name: CI Pipeline
 
 on:
   push:
@@ -14,6 +14,8 @@ jobs:
   main:
     if: github.ref == 'refs/heads/main'
     uses: level4cloud-org/devops_library/.github/workflows/ci.yaml@main
-    with:
-      input_param: "Hello World"
     secrets: inherit
+    with:
+      INPUT_PARAM: "Hello World"
+      MODEL_NAME: "Sales"
+      PROJECT_NAME: "Salesproject"
