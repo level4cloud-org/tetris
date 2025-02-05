@@ -6,29 +6,11 @@ on:
       - main
 
 jobs:
-  sast:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Run Snyk Scan
-        uses: snyk/actions/node@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: test --severity-threshold=high
-
-      - name: Upload result to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: snyk.sarif
+  main:
+    if: startsWith(github.ref, 'refs/heads/main')
+    uses: level4cloud-org/devops_library/.github/workflows/ci.yaml@main
+    secrets: inherit
+    with:
+      PROJECT_NAME: "MLOps"
+      INPUT_PARAM: "Hello World - main snyk"
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
