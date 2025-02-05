@@ -1,4 +1,4 @@
-# Usar uma imagem base Node.js oficial com Alpine para minimizar o tamanho
+# Usar uma imagem base Node.js oficial com Alpine para minimizar o tamanho!
 FROM node:20-alpine
 
 # Definir o diretório de trabalho dentro do container
