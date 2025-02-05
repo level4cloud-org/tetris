@@ -9,8 +9,8 @@ jobs:
   main:
     if: startsWith(github.ref, 'refs/heads/main')
     uses: level4cloud-org/devops_library/.github/workflows/ci.yaml@main
-    secrets: inherit
+    secrets:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
     with:
       PROJECT_NAME: "MLOps"
       INPUT_PARAM: "Hello World - main snyk"
-      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
