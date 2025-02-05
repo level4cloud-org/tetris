@@ -12,4 +12,4 @@ jobs:
     secrets: inherit
     with:
       PROJECT_NAME: "MLOps"
-      INPUT_PARAM: "Hello World - main"
+      INPUT_PARAM: "Hello World - main snyk"
