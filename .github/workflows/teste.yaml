@@ -5,13 +5,14 @@ on:
 
 jobs:
   environment-setup:
-    runs-on: ubuntu-latest
     name: Setup do Ambiente
+    runs-on: ubuntu-latest
     steps:
       - name: Environment Setup
         run: echo "✅ Environment setup concluído"
 
   health-check:
+    name: Health Check
     runs-on: ubuntu-latest
     steps:
       - name: Health Check / Validar Secrets
@@ -21,7 +22,10 @@ jobs:
   # SAST
   # -------------------
   sast:
+    name: SAST
     runs-on: ubuntu-latest
+    concurrency:
+      group: example-group
     needs: environment-setup
     steps:
       - name: SAST / Health Check
