@@ -19,17 +19,13 @@ jobs:
   # -------------------
   # SAST
   # -------------------
-  sast-health:
+  sast:
     runs-on: ubuntu-latest
     needs: environment-setup
     steps:
       - name: SAST / Health Check
         run: echo "✅ SAST Health Check"
-
-  sast-auto-detect:
-    runs-on: ubuntu-latest
-    needs: sast-health
-    steps:
+        
       - name: SAST / Auto Detect Languages
         run: echo "🔍 Detectando linguagens"
 
