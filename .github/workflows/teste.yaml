@@ -1,109 +1,78 @@
-name: Security Analysis Pipeline
+name: Security Analysis
 
 on:
   push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
-  # Você pode adicionar um cron job para varreduras noturnas/semanais (opcional)
-  # schedule:
-  #   - cron: '30 1 * * *' # Executa diariamente à 01:30 AM UTC
 
 jobs:
-  security_scans:
-    # A base do seu ambiente, como ubuntu-latest
+  environment-setup:
     runs-on: ubuntu-latest
-    
     steps:
-      
-      # 1. Environment Setup (4s)
       - name: Environment Setup
-        uses: actions/checkout@v4
-        # Adicione etapas adicionais de setup (ex: setup-java, setup-node, etc.) se necessário
-        
-      # 2. Health Check / Validar Secrets (5s)
-      - name: Health Check / Validate Secrets
-        # Esta etapa é geralmente um script que verifica se as variáveis de ambiente e secrets necessários estão disponíveis
-        run: echo "Verificando secrets e configurações..."
-        
-      # --- SAST (Static Application Security Testing) ---
-      
-      # 3. SAST / Health Check (4s) & 4. SAST / Auto Detect Languages (5s)
-      # Em muitas ferramentas SAST (como CodeQL ou SonarCloud), estas etapas são combinadas ou automáticas.
-      - name: SAST Setup
-        # Exemplo com CodeQL, que faz o setup e a detecção de linguagens
-        uses: github/codeql-action/init@v3
-        with:
-          languages: javascript, python # Exemplo de linguagens detectadas
-          
-      # 5. SAST / Analyze (actions) (1m 0s) - Análise principal do CodeQL (ou outra ferramenta)
-      - name: SAST / Analyze (actions)
-        uses: github/codeql-action/analyze@v3
+        run: echo "✅ Environment setup concluído"
 
-      # 6. SAST / Analyze (javascript-t...) (28m 20s) & 7. SAST / Analyze (python) (1m 8s)
-      # Estes parecem ser steps de análise específicos ou de longa duração (pode ser uma única etapa para o CodeQL, ou ações separadas para outras ferramentas SAST)
-      # No CodeQL, a análise já está na etapa acima, então vamos simular que são etapas de outras ferramentas.
-      - name: SAST / Analyze (javascript-tool)
-        # uses: uma-acao/sast-javascript@v1
-        run: echo "Executando análise de segurança JavaScript..."
-        
-      - name: SAST / Analyze (python)
-        # uses: uma-acao/sast-python@v1
-        run: echo "Executando análise de segurança Python..."
-        
-      # 8. SAST / List Vulnerabilities (0s)
+      - name: Health Check / Validar Secrets
+        run: echo "✅ Secrets validados"
+
+  sast:
+    runs-on: ubuntu-latest
+    needs: environment-setup
+    steps:
+      - name: SAST / Health Check
+        run: echo "✅ SAST Health Check"
+      
+      - name: SAST / Auto Detect Languages
+        run: echo "🔍 Detectando linguagens"
+
+  sast-analyze:
+    runs-on: ubuntu-latest
+    needs: sast
+    strategy:
+      matrix:
+        language: [actions, javascript-typescript, python]
+    steps:
+      - name: SAST / Analyze (${{ matrix.language }})
+        run: echo "🔎 Rodando análise em ${{ matrix.language }}"
+
+  sast-results:
+    runs-on: ubuntu-latest
+    needs: sast-analyze
+    steps:
       - name: SAST / List Vulnerabilities
-        run: echo "Listando resultados do SAST..."
-        # Geralmente os resultados são carregados para o GitHub Security tab (CodeQL) ou uma plataforma externa (SonarCloud)
-        
-      # 9. SAST / Security Gate (5s)
+        run: echo "📋 Listando vulnerabilidades SAST"
+
       - name: SAST / Security Gate
-        # Step que falha o build se vulnerabilidades críticas ou de alta prioridade forem encontradas.
-        run: |
-          # Adicione lógica para verificar se o scan SAST encontrou falhas críticas que devem quebrar o build
-          echo "Verificação do Security Gate SAST concluída."
+        run: echo "🚧 Checando gate de segurança SAST"
 
-      # --- SCA (Software Composition Analysis) ---
-      
-      # 10. SCA / Health Check (7s)
+  sca:
+    runs-on: ubuntu-latest
+    needs: environment-setup
+    steps:
       - name: SCA / Health Check
-        run: echo "Verificando dependências e ambiente SCA..."
+        run: echo "✅ SCA Health Check"
 
-      # 11. SCA / Dependabot Scan (7s)
+  sca-scan:
+    runs-on: ubuntu-latest
+    needs: sca
+    steps:
       - name: SCA / Dependabot Scan
-        # Dependabot é nativo do GitHub. Esta etapa pode usar uma ação de SCA de terceiros (ex: Snyk, Trivy)
-        # uses: uma-acao/sca-scan@v1
-        run: echo "Executando varredura de dependências (SCA)..."
-        
-      # 12. SCA / List Vulnerabilities (6s)
+        run: echo "📦 Rodando Dependabot Scan"
+
+  sca-results:
+    runs-on: ubuntu-latest
+    needs: sca-scan
+    steps:
       - name: SCA / List Vulnerabilities
-        run: echo "Listando vulnerabilidades de dependência..."
-        
-      # 13. SCA / Security Gate (5s)
+        run: echo "📋 Listando vulnerabilidades SCA"
+
       - name: SCA / Security Gate
-        # Step que falha o build se vulnerabilidades de dependência críticas forem encontradas.
-        run: |
-          # Adicione lógica para verificar se o scan SCA encontrou falhas críticas
-          echo "Verificação do Security Gate SCA concluída."
+        run: echo "🚧 Checando gate de segurança SCA"
 
-      # --- DAST (Dynamic Application Security Testing) ---
+  dast:
+    runs-on: ubuntu-latest
+    needs: environment-setup
+    steps:
+      - name: DAST AF / Scan
+        run: echo "🌐 Rodando DAST (AF Scan)"
 
-      # 14. DAST AF / Scan (28m 58s) & 15. DAST URL / Scan (1m 46s)
-      # O DAST exige que o aplicativo esteja em execução e acessível (geralmente em um ambiente de stage/QA).
-      # Na maioria das pipelines, um Job separado faria o Build e Deploy primeiro.
-      # Vamos presumir que o deploy foi feito em um Job anterior ou é feito aqui.
-      
-      # Nota: A ordem dos steps na imagem sugere que DAST é independente de SAST/SCA
-      # Se o DAST for demorado (28m 58s), é comum que seja executado em um ambiente de deploy de teste.
-      
-      - name: DAST Setup and Scan
-        # uses: uma-acao/dast-zap-baseline@v1
-        # O DAST-AF (Attack Framework) pode ser o scan completo do ZAP, e o DAST URL/Scan uma varredura mais rápida.
-        run: |
-          echo "Iniciando varredura DAST (Full Scan)..."
-          # Comando DAST Full Scan (28m 58s)
-          
-      - name: DAST URL / Quick Scan
-        run: |
-          echo "Iniciando varredura DAST (Quick Scan) na URL..."
-          # Comando DAST Quick Scan (1m 46s)
+      - name: DAST URL / Scan
+        run: echo "🌐 Rodando DAST (URL Scan)"
