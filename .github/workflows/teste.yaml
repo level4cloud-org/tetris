@@ -6,6 +6,7 @@ on:
 jobs:
   environment-setup:
     runs-on: ubuntu-latest
+    name: Setup do Ambiente
     steps:
       - name: Environment Setup
         run: echo "✅ Environment setup concluído"
