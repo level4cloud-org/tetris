@@ -6,28 +6,36 @@ on:
 jobs:
   environment-setup:
     runs-on: ubuntu-latest
-    - name: Environment Setup
-      run: echo "✅ Environment setup concluído"
+    steps:
+      - name: Environment Setup
+        run: echo "✅ Environment setup concluído"
 
-      
-  health-Check
+  health-check:
     runs-on: ubuntu-latest
-    - name: Health Check / Validar Secrets
-      run: echo "✅ Secrets validados"
-      
-  sast:
+    steps:
+      - name: Health Check / Validar Secrets
+        run: echo "✅ Secrets validados"
+
+  # -------------------
+  # SAST
+  # -------------------
+  sast-health:
     runs-on: ubuntu-latest
     needs: environment-setup
     steps:
       - name: SAST / Health Check
         run: echo "✅ SAST Health Check"
-      
+
+  sast-auto-detect:
+    runs-on: ubuntu-latest
+    needs: sast-health
+    steps:
       - name: SAST / Auto Detect Languages
         run: echo "🔍 Detectando linguagens"
 
   sast-analyze:
     runs-on: ubuntu-latest
-    needs: sast
+    needs: sast-auto-detect
     strategy:
       matrix:
         language: [actions, javascript-typescript, python]
@@ -35,46 +43,64 @@ jobs:
       - name: SAST / Analyze (${{ matrix.language }})
         run: echo "🔎 Rodando análise em ${{ matrix.language }}"
 
-  sast-results:
+  sast-list-vulns:
     runs-on: ubuntu-latest
     needs: sast-analyze
     steps:
       - name: SAST / List Vulnerabilities
         run: echo "📋 Listando vulnerabilidades SAST"
 
+  sast-security-gate:
+    runs-on: ubuntu-latest
+    needs: sast-list-vulns
+    steps:
       - name: SAST / Security Gate
         run: echo "🚧 Checando gate de segurança SAST"
 
-  sca:
+  # -------------------
+  # SCA
+  # -------------------
+  sca-health:
     runs-on: ubuntu-latest
     needs: environment-setup
     steps:
       - name: SCA / Health Check
         run: echo "✅ SCA Health Check"
 
-  sca-scan:
+  sca-dependabot:
     runs-on: ubuntu-latest
-    needs: sca
+    needs: sca-health
     steps:
       - name: SCA / Dependabot Scan
         run: echo "📦 Rodando Dependabot Scan"
 
-  sca-results:
+  sca-list-vulns:
     runs-on: ubuntu-latest
-    needs: sca-scan
+    needs: sca-dependabot
     steps:
       - name: SCA / List Vulnerabilities
         run: echo "📋 Listando vulnerabilidades SCA"
 
+  sca-security-gate:
+    runs-on: ubuntu-latest
+    needs: sca-list-vulns
+    steps:
       - name: SCA / Security Gate
         run: echo "🚧 Checando gate de segurança SCA"
 
-  dast:
+  # -------------------
+  # DAST
+  # -------------------
+  dast-af:
     runs-on: ubuntu-latest
     needs: environment-setup
     steps:
       - name: DAST AF / Scan
         run: echo "🌐 Rodando DAST (AF Scan)"
 
+  dast-url:
+    runs-on: ubuntu-latest
+    needs: dast-af
+    steps:
       - name: DAST URL / Scan
         run: echo "🌐 Rodando DAST (URL Scan)"
